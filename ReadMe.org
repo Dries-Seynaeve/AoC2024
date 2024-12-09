@@ -1,0 +1,5 @@
+* Advent of Code 2024 solutions
+
+These are my solutions to the AoC coding challenges. I have implemented these in python and most
+solutions have not been reformatted. This might happen in the future. 
+
