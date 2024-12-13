@@ -6,43 +6,58 @@ with open("input.txt") as f:
 
 
 
-def get_number_of_sides(area):
+def get_number_of_sides(area, horizontal=True):
 
-    amount_of_lines = 0
-    
+    total_amount_of_lines = 0
+    previous_amount_of_lines = 0
+    elements_in_previous_line = []
+
     # Horizontal lines
     for i in range(len(lines)):
-        elements_in_line = [pos[1] for pos in area if pos[0] == i ]
-        if len(elements_in_line) == 0:
-            continue
-        i_min = min(elements_in_line)
-        i_max = max(elements_in_line)
+        amount_of_lines = 0
+        if horizontal:
+            elements_in_line = [pos[1] for pos in area if pos[0] == i ]
+        else:
+            elements_in_line = [pos[0] for pos in area if pos[1] == i ]
+        
+        if not len(elements_in_line) == 0:
+            i_min = min(elements_in_line)
+            i_max = max(elements_in_line)
 
+            while i_min <= i_max:
+                if i_min in elements_in_line and not i_min in elements_in_previous_line:
+                    amount_of_lines += 1
+                while i_min in elements_in_line and not i_min in elements_in_previous_line:
+                    i_min += 1
+                i_min += 1
+
+        if not len(elements_in_previous_line) == 0:
+            i_min = min(elements_in_previous_line)
+            i_max = max(elements_in_previous_line)
+            while i_min <= i_max:
+                if i_min in elements_in_previous_line and not i_min in elements_in_line:
+                    amount_of_lines += 1
+                while i_min in elements_in_previous_line and not i_min in elements_in_line:
+                    i_min += 1
+                i_min += 1
+
+        elements_in_previous_line = elements_in_line
+        total_amount_of_lines += amount_of_lines
+        previous_amount_of_lines = amount_of_lines
+
+
+    amount_of_lines = 0
+    if not len(elements_in_previous_line) == 0:
+        i_min = min(elements_in_previous_line)
+        i_max = max(elements_in_previous_line)
         while i_min <= i_max:
-            amount_of_lines += 1
-            while i_min in elements_in_line:
+            if i_min in elements_in_previous_line:
+                amount_of_lines += 1
+            while i_min in elements_in_previous_line:
                 i_min += 1
-            while i_min not in elements_in_line and i_min <= i_max:
-                i_min += 1
-
-    print(amount_of_lines)
-    # vertical lines
-    for i in range(len(lines[0])):
-        elements_in_line = [pos[0] for pos in area if pos[1] == i ]
-
-        if len(elements_in_line) == 0:
-            continue
-
-        i_min = min(elements_in_line)
-        i_max = max(elements_in_line)
-
-        while i_min <= i_max:
-            amount_of_lines += 1
-            while i_min in elements_in_line:
-                i_min += 1
-            while i_min not in elements_in_line and i_min <= i_max:
-                i_min += 1
-    return amount_of_lines
+            i_min += 1
+    total_amount_of_lines += amount_of_lines
+    return total_amount_of_lines
 
 
 
@@ -81,12 +96,15 @@ def main(lines):
             if not searched_areas[i,j]:
                 area = get_area(i,j)
                 sides = get_sides(area)
-                number_sides = get_number_of_sides(area)
+
+                number_sides = get_number_of_sides(area, True)
+                number_sides += get_number_of_sides(area, False)
+
                 a = len(area)
 
                 for pos in area:
                     searched_areas[pos[0], pos[1]] = True
-                print(lines[i][j], number_sides)
+                
                 price_1 += a*sides
                 price_2 += a*number_sides
     return price_1, price_2
