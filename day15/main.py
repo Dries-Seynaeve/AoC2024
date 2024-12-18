@@ -2,6 +2,65 @@ with open("input.txt") as f:
     lines = f.readlines()
 lines = [line.strip() for line in lines]
 
+class Map2():
+    def __init__(self, lines, columns):
+        self.map = [["."]*2*columns for i in range(2*lines)]
+
+    def add_Wall(self, x, y):
+        wall = Wall(x, y)
+        self.map[x][2*y]   = wall
+        self.map[x][2*y+1] = wall
+
+    def add_crate(self, x, y):
+        cratel = Crate_L(x, y)
+        crater = Crate_R(x, y)
+        self.map[x][2*y] = cratel
+        self.map[x][2*y+1] = crater
+
+    def add_robot(self, x, y):
+        self.x = x
+        self.y = 2*y
+
+    def move(self, dx, dy):
+        if dx == 0:
+            value = self.map[self.x][self.y]
+            if isinstance(value, Wall):
+                return False
+            elif isinstance(value, Crate):
+                delta = dy
+                while isinstance(self.map[self.x][self.y+delta], Crate):
+                    delta += dy
+                return not isinstance(self.map[self.x, self.y+delta], Wall)
+            else:
+                return False
+
+        if dy == 0:
+                
+        print(dx, dy)
+
+    def move_left(self):
+        self.move(0, -1)
+
+    def print(self):
+        for (i, row) in enumerate(self.map):
+            line = ""
+            for j, c in enumerate(row):
+                if i == self.x and j == self.y:
+                    line += "@"
+                elif isinstance(c, Wall):
+                    line += "#"
+                elif isinstance(c, Crate_L):
+                    line += "["
+                elif isinstance(c, Crate_R):
+                    line += "]"
+                else:
+                    line += "."
+            print(line)
+        
+
+
+
+
 class Map():
     
     def __init__(self, lines, columns):
@@ -129,12 +188,24 @@ class Crate(Tile):
     def __repr__(self):
         return "O"
 
+class Crate_L(Crate):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+    def __repr__(self):
+        return "["
+
+class Crate_R(Crate):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+    def __repr__(self):
+        return "]"
 
 
 
+def parse_input(lines, map):
 
-def parse_input(lines):
-    map = Map(len(lines), len(lines[0]))
     directions = ""
     fill_map = True
 
@@ -156,6 +227,7 @@ def parse_input(lines):
 
 def move_robot(map, directions):
     for c in directions:
+        #map.print()
         if c.__eq__("<"):
             map.move_left()
         elif c.__eq__(">"):
@@ -172,10 +244,14 @@ def move_robot(map, directions):
 
 
 if __name__ == "__main__":
-    map, directions = parse_input(lines)
+    map = Map(len(lines), len(lines[0]))
+    map, directions = parse_input(lines, map)
+    # move_robot(map, directions)
+    # print("Part 1")
+    # print(map.get_score())
+    print("Part 2")
+    map = Map2(len(lines), len(lines[0]))
+    map, directions = parse_input(lines, map)
     move_robot(map, directions)
-    print("Part 1")
-    print(map.get_score())
-
 
     
