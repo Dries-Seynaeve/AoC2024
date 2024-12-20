@@ -15,13 +15,13 @@ class Cell():
 
     def __lt__(self, other):
         self.f < other.f
-        
-class Solution():
-    def __init__(self, path, score, final):
-        self.path = path
-        self.score = score
 
-class Grid():
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+        
+
+
+class BFS():
 
     def __init__(self):
         self.paths = {}
@@ -36,6 +36,8 @@ class Grid():
                 self.cells.append(Cell(x, y, reachable))
         x, y = start
         self.start     = self.get_cell(x, y)
+        self.start.f   = 0
+        self.start.parent = Cell(x-1, y, False)
 
         x, y = end
         self.end = self.get_cell(x, y)
@@ -55,13 +57,71 @@ class Grid():
             cells.append(self.get_cell(cell.x, cell.y+1))
         return cells
 
+    def get_value_of_step(self, cell, adj):
 
-    def solve(self, cell=None):
-        if cell is None:
-            cell = self.start
+        parent = cell.parent
+        
+        if (parent.x - cell.x) == (cell.x - adj.x) and \
+           (parent.y - cell.y) == (cell.y - adj.y):
+            return 1
+        else:
+            return 1001
 
-        print(self.get_adject_cells(cell))
-        print(cell.x, cell.y)
+
+
+    def solve(self):
+
+        queue = []
+        explored = []
+        queue.append(self.start)
+        max_x = 0
+        while queue:
+
+            cell = queue.pop()
+            if cell == self.end:
+                paths = [q for q in queue if q.h == cell.h]
+                
+                paths.append(cell)
+                cells = []
+                for path in paths:
+                    cell = path
+                    while not cell == self.start:
+                        if not cell in cells:
+                            cells.append(cell)
+                        cell = cell.parent
+                cells.append(self.start)
+                print("Solution: ", len(cells))
+
+                return cell
+            # Past of the cell
+            cell_past  = []
+
+            c = cell
+            while not c == self.start:
+                c = c.parent
+                cell_past.append(c)
+
+            cell_neigh = [c for c in self.get_adject_cells(cell) if c.reachable and not c in cell_past]
+            if cell.x > max_x:
+                print(cell.x, cell.y, cell.h)
+                max_x = cell.x
+            for neigh in cell_neigh:
+                # Get a new cell, with cell as parent and calculate the cost c.h
+                # Add the cell the the queue and sort this so that we start with the lowest score
+
+                next_cell = Cell(neigh.x, neigh.y, True)
+                next_cell.parent = cell
+                next_cell.h = cell.h + self.get_value_of_step(cell, neigh)
+                if next_cell.h > 115500:
+                    print("\tPassed!!")
+                    continue
+
+                queue.append(next_cell)
+                sort_on_h = lambda val : val.h
+                queue.sort(reverse=True, key=sort_on_h)
+
+                
+                
 
 
     
@@ -73,7 +133,7 @@ class AStar():
     def __init__(self):
         self.opened = []
         heapq.heapify(self.opened)
-        self.closed = set()
+        self.closed = []
         self.cells = []
         self.grid_height = len(lines)
         self.grid_width = len(lines[0])
@@ -159,12 +219,12 @@ class AStar():
             f, cell = heapq.heappop(self.opened)
 
             # add cell to closed list so we don't process it twice
-            self.closed.add(cell)
+            self.closed.append(cell)
             # if ending cell, display found path
             if cell is self.end:
                 print("Score: ", cell.g)
 
-                self.display_path()
+                #self.display_path()
                 break
             # get adjacent cells for cell
             adj_cells = self.get_adject_cells(cell)
@@ -203,11 +263,12 @@ if __name__ == "__main__":
 
     # astar = AStar()
     # astar.init_grid(walls, start[0], end[0])
-
+    # print("Part 1")
     # astar.process()
 
-    solve = Grid()
-    solve.init_grid(walls, start[0], end[0])
-    solve.solve()
+    print("part 2")
+    bfs = BFS()
+    bfs.init_grid(walls, start[0], end[0])
+    bfs.solve()
 
 
